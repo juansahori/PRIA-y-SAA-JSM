@@ -9,5 +9,5 @@
   - [Práctica 2](Practica2.qmd): SAA Proyecto evaluable 1: distribución de probabilidad en variable aleatoria contínua y discreta
  
 - **Carpeta con imágenes:**
-  - [5 imagénes para Práctica 4](Carpeta%20imagenes): Carpeta con las 5 imágenes que se utilizan en la Práctica 4
+  - [5 imagénes para Práctica 4](Carpeta%20imágenes): Carpeta con las 5 imágenes que se utilizan en la Práctica 4
 
