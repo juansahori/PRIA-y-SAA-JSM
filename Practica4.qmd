@@ -1,0 +1,98 @@
+---
+title: "Práctica 4"
+author: "Juan Sahorí Merino"
+format: html
+editor: visual
+---
+
+# **Radar TOP TRUMPS**
+
+Basándote en la librería [`ggradar`](https://github.com/ricardo-bion/ggradar), realiza una función "radartt" () que reciba como argumentos: *baraja* y *pers*, siendo el primero el data frame de los top trumps de muestra y el segundo un vector de 1 a 5 elementos que serán los nombres de los data frames. La función mostrará un diagrama de radar para cada personaje sobre el mismo lienzo, con las características numéricas de los personales y su valor escalado por rango.
+
+```{r}
+library(ggradar)
+library(dplyr)
+library(ggplot2)
+
+hp <- read.csv("https://raw.githubusercontent.com/jesusturpin/curintel2324/main/data/harry_potter.csv")
+
+#Creamos una función para normalizar los datos (de 0 a 1) respecto al valor mínimo y máximo de cada columna
+normalizar <- function(x){
+  x = (x - min(x)) / (max(x) - min(x))
+  return(x)
+}
+
+radartt <- function(baraja, pers) {
+  
+  df <- baraja %>%
+    select(Nombre,Magia,Astucia,Coraje,Sabiduria,Templanza) %>%
+    group_by(Nombre)
+  
+  # #Aplicamos la función de normalizar a las columnas que no sean Nombre,
+  #por eso la excluimos con [,-1]
+  df <- data.frame(df["Nombre"],lapply(df[,-1],normalizar))
+  
+  #Seleccionamos 5 personajes aleatorios (Ya que si lo hiciésemos con los 30 personajes
+  #de la baraja, se taparían unos con otros y a penas podrían distinguirse)
+  muestra_personajes <- sample(nrow(df), 5)
+  #Creamos un nuevo dataframe con las filas seleccionadas
+  df_muestra <- df[muestra_personajes, ]
+
+  print(ggradar(as.data.frame(df_muestra)), device = "rgl")
+}
+
+
+# Llama a la función radartt con el data frame completo
+radartt(hp)
+
+
+
+
+```
+
+# **GGIMG TOP TRUMPS**
+
+Basándote en la librería [`ggimg`](https://github.com/statsmaths/ggimg), realiza una demostración con las imágenes de personajes de los dataset TOP TRUMPS. Teniendo en cuenta que son 30 personajes, no es necesario usar el dataset completo.
+
+```{r}
+#cargamos todas las librerías que vamos a usar
+library(tidyverse)
+library(ggplot2)
+library(ggimage)
+library(ggimg)
+library(ggpubr)
+library(jpeg)
+library(png)
+
+personajes <- read.csv("https://raw.githubusercontent.com/jesusturpin/curintel2324/main/data/harry_potter.csv")
+# Lista de nombres de personajes
+nombres_personajes <- c("Harry Potter", "Ron Wrasley", "Hermione Granger", "Profesor Albus Dumbledor", "Dementor")
+
+df_personajes <- personajes %>%
+  filter(Nombre %in% nombres_personajes)
+
+# Ruta a la carpeta de imágenes
+ruta_imagenes <- "C:/Users/juans/OneDrive/Documentos/imagenes_potter"
+
+# Construir la ruta del archivo de imagen
+ruta_imagen <- c(file.path(ruta_imagenes, paste0(nombres_personajes, ".jpg")))
+
+#Creamos la nueva columna Imagen en el dataframe con los valores de la lista ruta_imagen que hemos creado
+df_personajes$Imagen <- ruta_imagen
+
+#Dibujamos el gráfico de dispersión con imágenes
+pl <- ggplot(df_personajes, aes(x = Magia, y = Astucia, image=Imagen)) +
+  geom_point() +
+  #Modificando el tamaño, si hacemos las imágenes muy grandes, se pueden solapar unas con otras y
+  #perder la percepción de que a medida que aumenta x, también lo hace y.
+  #Recomiendo que se vea pequeño, guardar la imagen y posteriormente hacerle zoom
+  #Además podemos añadir las etiquetas de Nombre para que se entienda mejor el gráfico
+  geom_image(aes(label=Nombre),size=0.05) +
+  geom_text(aes(label=Nombre),hjust = 1.5, vjust = 0.5, size = 2.5, color = "black") +
+  theme_classic()
+
+#Con esto, forzamos que R dibuje el resultado como en la práctica anterior
+#si no sería simplemente llamar a "pl"
+print(pl, device = "rgl")
+
+```
