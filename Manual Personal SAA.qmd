@@ -1,0 +1,1632 @@
+---
+title: "Manual-Personal-SAA"
+author: "Juan Sahorí Merino"
+format: html
+editor: visual
+---
+
+## Tipos de estadística
+
+#### Descriptiva
+
+Describe y resume todos los datos disponibles
+
+#### Inferencial
+
+En una **muestra** grande, podemos hacer **inferencias** sobre la **población** total a partir de una muestra significativa.
+
+## Tipos de datos
+
+### Numéricos (cuantitativos)
+
+#### Contínuos
+
+Medidas (tiempo, velocidad, longitud, ...)
+
+#### Discretos
+
+Cantidad o recuentos (número de pedidos, número de aciertos, ...)
+
+### Categóricos (cualitativos)
+
+#### Nominales (sin orden)
+
+Estado civil, País, ...
+
+#### Ordinales
+
+Respuesta a una encuesta gradual (muy en desacuerdo, en desacuerdo, de acuerdo, muy de acuerdo, ...)
+
+## Medidas estadísticas de centralidad
+
+#### Estructura del data frame:
+
+```{r}
+library(ggplot2)
+str(msleep)
+```
+
+#### Resumen estadístico del data frame:
+
+```{r}
+summary(msleep)
+```
+
+#### Media y Mediana
+
+La media se calcula sumando todos los valores y dividiendo entre el número de datos.
+
+La mediana se calcula ordenando todos los datos de menor a mayor y quedandose con el que ocupa la posición central. Si tenemos un número par de datos, tomamos como mediana la media de los dos números que ocupan las posiciones centrales.
+
+```{r}
+media <- mean(msleep$sleep_total)
+media
+mediana <- median(msleep$sleep_total)
+mediana
+```
+
+#### Moda
+
+Es una medida de centralidad para variable categórica. Representa la categoría más frecuente.
+
+```{r}
+#install.packages("prettyR")
+library(prettyR)
+prettyR::Mode(msleep$sleep_total)
+```
+
+## Medidas de dispersión
+
+### La varianza
+
+#### La varianza poblacional
+
+Es la media de los cuadrados de las distancias de los datos a la media
+
+![](images/Captura%20de%20pantalla%202023-12-11%20123609.png)
+
+#### La varianza muestral
+
+![](images/Captura%20de%20pantalla%202023-12-11%20123655.png)
+
+Función para calcular la varianza en R:
+
+```{r}
+varianza_R <- var(msleep$sleep_total)
+varianza_R
+```
+
+### Desviación estándar o desviación típica
+
+![](images/Captura%20de%20pantalla%202023-12-11%20124023.png)
+
+Es la raíz cuadrada de la varianza
+
+```{r}
+sd(msleep$sleep_total)
+```
+
+### Rango
+
+Diferencia entre el dato mayor y el dato menor.
+
+```{r}
+range(msleep$sleep_total)
+range(msleep$sleep_total)[2]- range(msleep$sleep_total)[1]
+```
+
+### EAM. Error absoluto medio
+
+También conocido como desviación media absoluta.
+
+![](images/Captura%20de%20pantalla%202023-12-11%20124455.png)
+
+Creamos la función error medio
+
+```{r}
+mi_eam <- function(vect) {
+  dm <- vect - mean(vect)
+  errror <- mean(abs(dm))
+  return(errror)
+}
+mi_eam(msleep$sleep_total)
+```
+
+### Cuantiles
+
+Los cuantiles son puntos tomados a intervalos regulares de la función de distribución de una variable aleatoria.
+
+Los más usados son:
+
+-   Cuartiles: 0.25, 0.50 y 0.75
+
+-   Quintiles: 0.20, 0.40, 0.60 y 0,80
+
+-   Deciles: 0.10, 0.20, ... , 0.9
+
+-   Percentiles: 0.01, 0.02, ... 0.98, 0.99
+
+#### Cuantiles vs cuartiles
+
+La función en R que permite calcular los valores cuantiles es:
+
+```{r}
+quantile(msleep$sleep_total)
+```
+
+Por defecto, el vector de cuantiles que se pasa como argumento *probs* en la función *quantile()*, es el de los cuartiles.
+
+#### Cuartiles y deciles
+
+Los cuartiles, dividen los datos en 4 partes iguales, en nuestro caso, el 25 % de los datos se encuentran entre 1.90 y 7.85 horas. El siguiente 25 % de los datos entre 7.85 y 10.1, que se corresponde con la mediana, la cual como sabemos, divide los datos en dos partes iguales. El tercer cuartil corresponde a los datos entre la mediana y 13.75 y por último, entre 13.75 y 19.90.
+
+```{r}
+deciles <- seq(0, 1, 0.1)
+quantile(msleep$sleep_total, probs = deciles)
+```
+
+#### Percentiles
+
+```{r}
+percentiles <- seq(0, 1, 0.01)
+quantile(msleep$sleep_total, probs = percentiles)
+```
+
+### Rango intercuartil (IQR)
+
+El rango intercuartil o IQR, es otra medida de dispersión. Se corresponde con la distancia entre el primer y tercer cuartil, o lo que es lo mismo entre el percentil 25º y 75º. En el diagrama de caja y bigote representa los límites de la caja.
+
+Volviendo a nuestro ejemplo, calculamos la diferencia entre los quantiles 0.75 y 0.25
+
+```{r}
+q1 <- quantile(msleep$sleep_total, 0.25)
+q3 <- quantile(msleep$sleep_total, 0.75)
+iqr <-  q3 - q1
+iqr
+```
+
+### Valores atípicos (Outliers)
+
+Los valores atípicos se encuentran en el rango que se aleja 1.5 veces el rango intercuartil del primer y tercer cuartil:
+
+-   Dato \< Q1 - 1.5xIQR
+
+-   Dato \> Q3 + 1.5xIQR
+
+Si nos fijamos en la variable peso del data frame: *msleep\$bodywt* y Calculamos q1 y q3
+
+```{r}
+q1 <- quantile(msleep$bodywt, 0.25)
+q1
+q3 <- quantile(msleep$bodywt, 0.75)
+q3
+iqr <- q3 - q1
+iqr
+atip_bajo <- q1 - 1.5*iqr
+atip_bajo
+atip_alto <- q3 + 1.5*iqr
+atip_alto
+```
+
+## Introducción a la probabilidad en variable discreta
+
+La probabilidad es un número entre 0 y 1 que indica cuánto creemos que ocurrirá un evento en un experimento. Un experimento es una acción que produce resultados específicos, como lanzar una moneda o un dado.
+
+El conjunto de todos los posibles resultados de un experimento es el espacio muestral, por ejemplo, al lanzar un dado, el espacio muestral es {1,2,3,4,5,6}. Cada resultado individual se llama un resultado.
+
+Un evento es cualquier subconjunto del espacio muestral. La probabilidad de un evento se denota como p, y la probabilidad de que no ocurra como q, cumpliéndose que p = 1-q. La probabilidad de un evento imposible es 0, y la probabilidad de un evento seguro es 1.
+
+La probabilidad de que dos eventos sean independientes se multiplica,
+
+![](images/Captura%20de%20pantalla%202023-12-11%20130552.png)
+
+mientras que la de dos eventos dependientes se multiplica la probabilidad del primero por la probabilidad del segundo condicionado al primero.
+
+![](images/Captura%20de%20pantalla%202023-12-11%20130626.png)
+
+Por ejemplo, la probabilidad de obtener dos veces rojo en la ruleta en un experimento sería la probabilidad de obtener rojo en el primer intento multiplicada por la probabilidad de obtener rojo nuevamente en el segundo intento.
+
+```{r}
+p_2x_rojo <- (18/37)*(18/37)
+p_2x_rojo
+```
+
+En el segundo caso (sucesos dependientes): Probabilidad de obtener dos ases en Texas Holdem
+
+```{r}
+p_AA <- (4/52)*(3/51)
+p_AA
+# En promedio, ocurre una vez de cada:
+1/p_AA
+```
+
+## **Muestreo y simulación en R**
+
+En la estadística, se conoce como **Muestreo** a la técnica para la selección de una muestra a partir de una población estadística. Al elegir una muestra aleatoria se espera conseguir que sus propiedades sean extrapolables a la población.
+
+```{r}
+# leemos el fichero desde el repositorio de github:
+lqsa <- read.csv("https://raw.githubusercontent.com/jesusturpin/curintel2324/main/data/lqsa.csv")
+str(lqsa)
+# Convertimos en factor las últimas dos columnas:
+categ <- c("Grupo_edad", "Sexo")
+# Si queremos convertir todas las columnas chr: categ <- sapply(lqsa, is.character)
+lqsa[categ] <- lapply(lqsa[categ], as.factor)
+summary(lqsa)
+```
+
+Utilizando sample(), extraemos la mitad de la baraja:
+
+```{r}
+n = round(nrow(lqsa)/2)
+s <- sample(1:nrow(lqsa), n, replace=FALSE)
+lqsa[s,]
+```
+
+## **Semilla y reproductividad de las secuencias aleatorias**
+
+El código anterior, realiza un sorteo distinto en cada ejecución del código. Si queremos que nuestro experimento sea reproducible, debemos utilizar una misma semilla para generar una secuencia de números aleatorios:
+
+```{r}
+set.seed(4444)
+s <- sample(1:nrow(lqsa), n, replace=FALSE)
+s
+```
+
+```{r}
+lqsa[s,]
+```
+
+¿Qué es el atributo *replace* (sustitución o reemplazo)? Cuando hacemos un muestreo sin sustitución (replace = FALSE), el elemento tomado de los datos, no puede volver a salir, por ejemplo si nos reparten 2 cartas, partiendo de una baraja de 52 cartas, no nos pueden dar dos cartas iguales. Los **sucesos** son **dependientes**.
+
+Si el muestreo es con reemplazo, como tirar un dado o una moneda, en cada extracción individual, todas las opciones están disponibles. Se dice que todos los **sucesos** son **independientes**.
+
+## Propiedades del muestreo estadístico
+
+1.  **Aleatoriedad:** Elegir elementos al azar para que todos tengan una oportunidad justa de ser seleccionados.
+
+2.  **Independencia:** Las observaciones no deben depender unas de otras; cada elección no afecta a la siguiente.
+
+3.  **Tamaño de la muestra:** La cantidad de elementos seleccionados debe ser apropiada; más elementos suelen dar estimaciones más precisas.
+
+4.  **Variabilidad:** Diferentes muestras pueden dar resultados distintos, lo que se refleja en el error estándar.
+
+5.  **Sesgo o Bias:** Evitar sesgos en la selección para que las inferencias reflejen realmente a la población.
+
+6.  **Eficiencia:** Buscar obtener estimaciones precisas con el menor tamaño de muestra posible.
+
+## Diversas técnicas de muestreo:
+
+-   **Muestreo Aleatorio Simple:** Cada elemento tiene la misma posibilidad de ser seleccionado, sin reemplazo.
+
+-   **Muestreo Sistemático:** Se elige un punto de inicio y se seleccionan elementos en intervalos fijos.
+
+-   **Muestreo Estratificado:** La población se divide en grupos similares, y se elige al azar de cada grupo.
+
+-   **Muestreo Intencional:** Se eligen específicamente individuos que cumplen ciertos criterios, no es aleatorio y puede tener sesgos.
+
+-   **Muestreo por Etapas Múltiples:** Combina dos o más técnicas, como muestreo por conglomerados seguido de muestreo aleatorio simple.
+
+La elección del método depende de la población, los objetivos y los recursos. Es crucial seleccionar el método adecuado para obtener resultados válidos y representativos.
+
+## Teorema central del límite
+
+Para una población con cualquier forma de distribución (aunque no sea normal) con una media u y una varianza o\^2 finitas, la distribución de la media de la muestra se aproximará a una distribución normal o gaussiana a medida que el tamaño de la muestra (n) aumente.
+
+## Valor esperado
+
+También llamada **esperanza matemática** Se define como la media de la distribución de probabilidad
+
+![](images/Captura%20de%20pantalla%202023-12-11%20131804-01.png)
+
+![](images/Captura%20de%20pantalla%202023-12-11%20131857.png)
+
+Como calcularlo en R:
+
+```{r}
+dado <- data.frame(n=1:6)
+dado
+```
+
+```{r}
+mean(dado$n)
+```
+
+Si lanzamos el dado 50 veces:
+
+```{r}
+library(tidyverse)
+dado_x50 <- dado %>%
+  sample_n(50, replace=TRUE)
+mean(dado_x50$n)
+```
+
+Si dibujamos el histograma:
+
+```{r}
+ggplot(dado_x50, aes(n)) +
+  geom_histogram(bins=6, fill = "blue", color = "black")+
+  labs(title = "Experimento: 50 tiradas de un dado", x = "Número", y = "Frecuencia")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  geom_hline(yintercept = 50/6, color = "red", linetype = "dashed", linewidth = 1)
+```
+
+Mientras que la distribución teórica es:
+
+```{r}
+pdado <- data.frame(numero = 1:6, prob = rep(1/6,6))
+ggplot(pdado, aes(x=numero,y=prob)) +
+  geom_col(fill = "blue", color = "black")+
+  geom_hline(yintercept = 1/6, color = "red", linetype = "dashed", size = 1)
+```
+
+A medida que la muestra sea mayor, el valor del muestreo se aproxima al valor teórico:
+
+```{r}
+ dado %>%
+  sample_n(3000, replace=TRUE) %>%
+  ggplot(aes(n))+
+  geom_histogram(bins=6, fill = "blue", color = "black")+
+  labs(title = "Experimento: 3000 tiradas de un dado", x = "Número", y = "Frecuencia")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  geom_hline(yintercept = 3000/6, color = "red", linetype = "dashed", size = 1)
+```
+
+```{r}
+ dado %>%
+  sample_n(6000, replace=TRUE) %>%
+  summarize(media = mean(n))
+```
+
+## Distribuciones de probabilidad contínuas
+
+### Distribución normal
+
+La distribución normal es fundamental en estadísticas debido al Teorema del Límite Central (TCL). Aunque los datos crudos no siempre siguen esta distribución, los errores y promedios en muestras grandes a menudo lo hacen.
+
+El TCL destaca la importancia de la distribución normal al permitirnos estimar la media con precisión mediante muestras suficientemente grandes. La precisión depende del tamaño de la muestra y la desviación típica. La distribución de las medias sigue una distribución normal, lo que resalta su relevancia.
+
+No hay un tamaño de muestra "mágico"; debe ser lo suficientemente grande para reducir el error típico de la media, dependiendo de la desviación típica de la muestra.
+
+Para evaluar la normalidad de una distribución, se utilizan enfoques gráficos como histogramas y Q-Q plots, así como análisis analíticos mediante contrastes de hipótesis de normalidad.
+
+Características de la distribución normal:
+
+\- Es simétrica respecto a la media, mediana y moda.
+
+\- Se define con dos parámetros: media (μ) y desviación estándar (σ).
+
+\- Cualquier distribución normal puede transformarse (normalización) para tener media 0 y desviación estándar 1.
+
+#### **Cálculos de probabilidades. Funciones: pnorm, dnorm, qnorm, rnorm**
+
+#### **Distribución acumulada: pnorm**
+
+Con la función pnorm, podemos generar la función de distribución acumulada.
+
+Obtener la probabilidad de que x \<= a: Ejemplo: probabilidad de que la altura sea **menor de 177**:
+
+```{r}
+a <- 177
+sigma <- 3
+mu <- 175
+plow_177 <- pnorm(a, mean = mu, sd = sigma)
+plow_177
+```
+
+#### **Densidad de probabilidad: dnorm**
+
+Esta función nos sirve para generar la función de densidad. En variable contínua para obtener probabilidades de que un dato se tenga un determinado valor, tenemos que fijar un intervalo (a,b), pues la anchura para un valor concreto es 0.
+
+Generar la función de densidad de probabilidad a partir de una secuencia de valores x:
+
+```{r}
+# Generamos valores de x
+x <- seq(160, 190, length.out = 100)
+# Calculamos la densidad de la distribución normal a partir de los cuantiles
+y <- dnorm(x, mean = mu, sd = sigma)
+
+# Creamos el gráfico
+ggplot() + 
+  geom_line(data = data.frame(x,y), aes(x, y), color="blue", linewidth = 1) +
+  labs(
+    title = bquote("Función de densidad Normal: " ~ mu ~ "= 175, " ~ sigma ~ "= 3"),
+    x = "altura",
+    y = "densidad") +
+  theme_bw()
+```
+
+#### **Cuantiles: qnorm**
+
+Calcula los cuantiles a partir de las probabilidades
+
+```{r}
+qnorm(0.025, mean = 175, sd = 3)
+qnorm(0.975, mean = 175, sd = 3)
+```
+
+#### **Generación de números aleatorios siguiendo una distribución normal rnorm**
+
+Genera una distribución de n datos aleatorios siguiendo una distribución normal de media mu y desviación típica sigma. En las cuatro funciones, si no se especifican los parámetros, se generan siguiendo una distribución normal estándar.
+
+```{r}
+set.seed(123)
+x <- rnorm(n = 500, mu, sigma)
+ggplot(data.frame(x,y), aes(x)) +
+  geom_density()
+```
+
+### Escalamiento:
+
+El escalamiento es esencial para análisis y modelos, ya que la magnitud de las variables puede afectar su peso. Los modelos requieren que los datos estén en la misma escala para ser comparables, aunque la magnitud específica no importa.
+
+**Z-Score:** Este proceso ajusta el conjunto de datos para que las variables tengan media 0 y desviación estándar 1, utilizando la fórmula:
+
+![](images/Captura%20de%20pantalla%202023-12-11%20133914.png)
+
+**Estandarización por rangos (0-1):** En este método, los nuevos valores están limitados entre 0 y 1. Se llama escalado por rangos, donde a cada valor se le resta el mínimo y se divide por el rango de la distribución.
+
+**Escalamiento decimal:** Se obtiene m (número de dígitos del mayor dato) y se divide cada dato entre 10 elevado a m
+
+### Distribución Uniforme
+
+La distribución uniforme se emplea para modelar situaciones donde se supone que los eventos son igualmente probables en un intervalo continuo y finito. Es útil en simulaciones que requieren muestras aleatorias de variables continuas.
+
+Esta distribución tiene una memoria completa, lo que significa que la probabilidad de un evento en un intervalo es constante, sin importar eventos anteriores. Sus funciones de densidad de probabilidad y de distribución acumulada son simples, facilitando su aplicación en cálculos y simulaciones.
+
+Características clave de la distribución uniforme:
+
+\- Es simétrica, asignando la misma probabilidad a todos los valores.
+
+\- Se define completamente con dos parámetros, (a) y (b), que son los límites inferior y superior del intervalo donde la variable puede tomar valores.
+
+#### **Cálculos de probabilidades. Funciones punif, dunif, qunif, runif**
+
+#### punif
+
+Ejemplo: Si un bus llega en cualquier momento dentro de una ventana de tiempo de 30 minutos, ¿cuál es la probabilidad de que llegue antes de los primeros 10 minutos?
+
+```{r}
+punif(10, min = 0, max = 30)
+```
+
+#### qunif
+
+Ejemplo: ¿Cuál es el punto medio del intervalo de tiempo para la llegada del bus? ¿Y cuáles son los tiempos correspondientes al primer y tercer cuartil?
+
+```{r}
+qunif(0.5, min = 0, max = 30)
+qunif(0.25, min = 0, max = 30)
+qunif(0.75, min = 0, max = 30)
+```
+
+#### runif
+
+Muy utilizada para generar números aleatorios con idéntica probabilidad, en un intervalo contínuo
+
+```{r}
+runif(10,1,10)
+```
+
+#### dunif
+
+En esta distribución t es constante
+
+```{r}
+dunif(runif(2,1,10),1,10)
+```
+
+### Distribución Exponencial
+
+La distribución exponencial se emplea para modelar el tiempo entre eventos que suceden de manera continua e independiente a una tasa constante. Es particularmente útil en el estudio de procesos de Poisson.
+
+Esta distribución no tiene memoria, lo que significa que la probabilidad de que ocurra un evento en un intervalo no depende de cuándo sucedió el último evento.
+
+Las funciones de densidad de probabilidad y de distribución acumulada tienen formas matemáticas simples, lo que facilita su aplicación en cálculos y simulaciones.
+
+Características clave de la distribución exponencial:
+
+\- No es simétrica, se inclina hacia la derecha (sesgo positivo).
+
+\- Se define completamente con un único parámetro, ![](images/Captura%20de%20pantalla%202023-12-11%20135015.png), que es la tasa de ocurrencia de eventos.
+
+La distribución exponencial tiene una conexión interesante con los procesos de Poisson. Si los eventos siguen un proceso de Poisson, entonces el tiempo entre eventos sigue una distribución exponencial.
+
+La relación se basa en el uso de la tasa (![](images/Captura%20de%20pantalla%202023-12-11%20135015-01.png)):
+
+-   Desviación estándar: 1/![](images/Captura%20de%20pantalla%202023-12-11%20135015-02.png)
+-   Con (t) siendo el tiempo hasta el próximo evento.
+
+Podemos ajustar la escala de la distribución exponencial cambiando la tasa (![](images/Captura%20de%20pantalla%202023-12-11%20135015-03.png)). Por ejemplo, si queremos modelar el tiempo en horas en lugar de minutos y sabemos que ![](images/Captura%20de%20pantalla%202023-12-11%20135015-04.png) es 0.1 por minuto, entonces para horas sería:
+
+Tasa para horas = 0.1 x 60
+
+Esto se debe a que la tasa (![](images/Captura%20de%20pantalla%202023-12-11%20135015-05.png)) es inversa al tiempo esperado entre eventos.
+
+#### **Cálculos de probabilidades. Funciones: pexp, dexp, qexp, rexp**
+
+#### pexp
+
+Ejemplo: Una empresa de telecomunicaciones envía paquetes de datos en una red con un promedio que sigue una distribución exponencial. Si la tasa es de 10 paquetes por segundo, es decir, el tiempo medio entre llegadas es 0.1 segundos ¿cuál es la probabilidad de que el tiempo entre la llegada de dos paquetes consecutivos sea inferior a 0.1 segundos?
+
+```{r}
+pexp(0.1, rate = 10)
+```
+
+#### qexp
+
+Ejemplo: ¿Cuál es la mediana, el Q1 y el Q3 del tiempo entre llegadas? ¿Y cuál es el tiempo entre llegadas para el percentil 99?
+
+```{r}
+qexp(0.5, rate = 10)
+qexp(0.25, rate = 10)
+qexp(0.75, rate = 10)
+qexp(0.99, rate = 10)
+```
+
+#### rexp
+
+Generación aleatoria de n elementos, siguiendo la distribución
+
+```{r}
+lambda <- 2
+rexp(1000, rate=lambda) %>%
+  boxplot()
+```
+
+### **Distribución Logística**
+
+La función logística es una función matemática que se utiliza comúnmente en estadísticas y aprendizaje automático. También se conoce como la función sigmoide debido a su forma en S. La forma general de la función logística es:
+
+![](http://127.0.0.1:38505/file_show?path=~%2FSAA%2FPr%C3%A1ctica%202%2Fimages%2FCaptura%20de%20pantalla%202023-11-26%20125937.png&id=50)
+
+**Características de la Función Logística:**
+
+1.  **Rango de Salida:**
+
+    -   La salida de la función logística siempre está en el rango de 0 a 1.
+
+    -   0\<=f(x)\<=1.
+
+2.  **Forma Sigmoidal:**
+
+    -   La función logística tiene una forma en S (sigmoide), lo que significa que tiene una transición suave entre 0 y 1.
+
+3.  **Monotonía Creciente:**
+
+    -   La función es monótona creciente, lo que significa que a medida que x aumenta, f(x) también aumenta.
+
+**Casos de Uso:**
+
+1\. **Regresión Logística:**
+
+-   La función logística se utiliza en regresión logística para modelar y predecir la probabilidad de que una instancia pertenezca a una clase particular (clase binaria, por ejemplo).
+
+2\. **Redes Neuronales:**
+
+-   En las redes neuronales, la función logística se utiliza comúnmente como función de activación en las capas ocultas para introducir no linealidad en el modelo.
+
+3\. **Modelado de Crecimiento Exponencial:**
+
+-   En ciertos modelos de crecimiento, la función logística se utiliza para describir el crecimiento que se satura a medida que se acerca a un límite superior.
+
+4\. **Análisis de Curvas de Aprendizaje:**
+
+-   Se utiliza en el análisis de curvas de aprendizaje para modelar el progreso y la convergencia de algoritmos de aprendizaje automático.
+
+5\. **Probabilidades en Estadísticas:**
+
+-   En estadísticas, la función logística se utiliza para transformar valores lineales en probabilidades, especialmente en el contexto de modelos de regresión logística.
+
+Se visualiza la función de densidad de la distribución logística con la función **dlogis**
+
+```{r}
+# Generamos valores de x
+x <- seq(-5, 5, length.out = 1000)
+mu <- 0
+s <- 1
+# Calculamos la densidad de la distribución logistica
+y <- dlogis(x, location = mu, scale = s)
+
+# Creamos el gráfico
+ggplot() + 
+  geom_line(data = data.frame(x,y), aes(x, y), color="blue", linewidth = 1) +
+  labs(
+    title = bquote("Función de densidad Logística: " ~ mu ~ "= 0, scale= 1"),
+    x = "altura",
+    y = "densidad") +
+  theme_bw()
+```
+
+La función **rlogis** se utiliza para generar números aleatorios de una distribución logística con parámetros dados. La distribución logística tiene dos parámetros: **location** (ubicación o media) y **scale** (escala). La función **rlogis** toma como argumentos el número de observaciones a generar (**n**) y los parámetros de la distribución (**location** y **scale**).
+
+Ejemplo de cómo generar números aleatorios de una distribución logística utilizando **rlogis**:
+
+```{r}
+x <- rlogis(n = 500, mu, s)
+ggplot(data.frame(x,y), aes(x)) +
+  geom_density()
+```
+
+La función **plogis** se utiliza para calcular la función de distribución acumulativa (CDF) de una distribución logística en un punto dado. La CDF proporciona la probabilidad acumulativa de que una variable aleatoria sea menor o igual a un valor específico. Aquí tienes un par de ejemplos de cálculos de probabilidades utilizando **plogis**:
+
+**Ejemplo 1: Calcular la probabilidad de que X sea menor o igual a 1 en una distribución logística con media 0 y escala 1.**
+
+```{r}
+# Parámetros de la distribución logística
+media <- 0     # Media
+escala <- 1     # Escala
+
+# Valor para el cual calcular la probabilidad
+x <- 1
+
+# Calcular la probabilidad acumulativa P(X <= x)
+probabilidad <- plogis(x, location = media, scale = escala)
+
+# Mostrar el resultado
+cat("La probabilidad acumulativa P(X <= 1) es:", probabilidad, "\n")
+```
+
+**Ejemplo 2: Calcular la probabilidad de que X sea menor o igual a -2 en una distribución logística con media 2 y escala 0.5.**
+
+```{r}
+# Parámetros de la distribución logística
+media <- 2     # Media
+escala <- 0.5   # Escala
+
+# Valor para el cual calcular la probabilidad
+x <- -2
+
+# Calcular la probabilidad acumulativa P(X <= x)
+probabilidad <- plogis(x, location = media, scale = escala)
+
+# Mostrar el resultado
+cat("La probabilidad acumulativa P(X <= -2) es:", probabilidad, "\n")
+```
+
+### **Distribución t-student**
+
+La distribución t de Student es una distribución de probabilidad que se utiliza comúnmente en inferencia estadística. Fue desarrollada por William Sealy Gosset en 1908 y se utiliza para realizar inferencias sobre la media de una población cuando el tamaño de la muestra es pequeño o cuando la desviación estándar de la población es desconocida.
+
+**Características de la Distribución T-Student**
+
+La distribución t de Student es simétrica alrededor de cero y tiene forma de campana, similar a la distribución normal, pero con colas más pesadas. La forma de la distribución t depende de un parámetro conocido como los grados de libertad (df).
+
+-   **Grados de libertad (df)**: Los grados de libertad determinan la forma de la distribución t. A medida que aumentan los grados de libertad, la distribución t se aproxima a una distribución normal estándar.
+
+-   **Media:** La media de la distribución t es cero para todos los grados de libertad.
+
+-   **Desviación Estándar:** La desviación estándar de la distribución t depende de los grados de libertad y es mayor que 1.
+
+**Función de Densidad de Probabilidad (PDF)**
+
+La función de densidad de probabilidad (PDF) de la distribución t está dada por:
+
+![](http://127.0.0.1:38505/file_show?path=~%2FSAA%2FPr%C3%A1ctica%202%2Fimages%2FCaptura%20de%20pantalla%202023-11-26%20125637.png&id=51)
+
+**Casos de Uso**
+
+1.  **Pruebas de Hipótesis para la Media:** La distribución t se utiliza para realizar pruebas de hipótesis sobre la media de una población cuando el tamaño de la muestra es pequeño y la desviación estándar de la población es desconocida.
+
+2.  **Intervalos de Confianza:** Se utiliza para construir intervalos de confianza alrededor de la media de una población.
+
+3.  **Comparación de Medias:** La distribución t se utiliza para comparar las medias de dos muestras independientes.
+
+4.  **Regresión Lineal:** En análisis de regresión, la distribución t se utiliza para realizar pruebas de hipótesis sobre los coeficientes de regresión.
+
+5.  **Estimación Puntual:** Se utiliza para estimar la media de una población cuando la desviación estándar de la población es desconocida.
+
+**Conclusiones**
+
+La distribución t de Student es una herramienta fundamental en estadística inferencial, especialmente en situaciones donde el tamaño de la muestra es pequeño. Sus propiedades y casos de uso la hacen esencial en diversas áreas, como la investigación científica, la economía y la ingeniería, donde se deben realizar inferencias sobre parámetros poblacionales a partir de muestras limitadas.
+
+#### Representación gráfica de su función de densidad
+
+```{r}
+# Generamos valores de x
+x <- seq(-4, 4, length.out = 1000)
+grados_libertad <- 10
+
+# Calculamos la densidad de la distribución t-student
+y <- dt(x, df = grados_libertad)
+
+# Creamos el gráfico
+ggplot() + 
+  geom_line(data = data.frame(x,y), aes(x, y), color="blue", linewidth = 1) +
+  labs(
+    title = bquote("Función de densidad T-student: grados de libertad = 10"),
+    x = "altura",
+    y = "densidad") +
+  theme_bw()
+```
+
+La función **rt** se utiliza para generar números aleatorios de una distribución t-Student. La sintaxis básica de la función es:
+
+rt(n, df)
+
+Donde:
+
+-   **n**: Número de valores aleatorios a generar.
+
+-   **df**: Grados de libertad de la distribución t.
+
+Ejemplo de cómo generar números aleatorios de una distribución t-student utilizando **rt**:
+
+```{r}
+x <- rt(n = 500, grados_libertad)
+ggplot(data.frame(x,y), aes(x)) +
+  geom_density()
+```
+
+La función de distribución acumulada (CDF) de la distribución t-Student en R se puede calcular con la función **pt**. Aquí tienes un par de ejemplos:
+
+**Ejemplo 1: Probabilidad acumulada para x = 2 en una t-Student con 10 grados de libertad**
+
+```{r}
+# Calcular la probabilidad acumulada para x = 2 en una t-Student con 10 grados de libertad
+prob_acumulada <- pt(2, df = 10)
+
+# Mostrar el resultado
+print(paste("La probabilidad acumulada para x = 2 es:", prob_acumulada))
+```
+
+**Ejemplo 2: Probabilidad acumulada para x = -1 en una t-Student con 5 grados de libertad**
+
+```{r}
+# Calcular la probabilidad acumulada para x = -1 en una t-Student con 5 grados de libertad
+prob_acumulada <- pt(-1, df = 5)
+
+# Mostrar el resultado
+print(paste("La probabilidad acumulada para x = -1 es:", prob_acumulada))
+```
+
+## **Variable Aleatoria Discreta vs. Continua**
+
+**Variable Aleatoria Discreta:**
+
+\- Representa posibles resultados de un experimento aleatorio.
+
+\- Ejemplo: Clima de mañana (soleado o lluvioso).
+
+\- Puede tomar un número finito de valores distintos.
+
+\- La distribución de probabilidad se define mediante la Función de Masa de Probabilidad (FMP) o Función de Probabilidad.
+
+\- Para un valor específico, la probabilidad es siempre cero.
+
+\- Se calculan las probabilidades directamente con la función de probabilidad.
+
+\- La suma de probabilidades para todos los valores es igual a 1.
+
+**Variable Aleatoria Continua:**
+
+\- Representa resultados infinitos e incontables.
+
+\- Ejemplo: Temperatura de mañana.
+
+\- Puede tener un continuo de resultados.
+
+\- La distribución de probabilidad se define mediante la Función de Densidad de Probabilidad (FDP).
+
+\- Para un valor concreto, la probabilidad es cero.
+
+\- Se utilizan integrales para calcular probabilidades en un intervalo.
+
+\- La integral de la FDP sobre todo el espacio es igual a 1.
+
+En Machine Learning, algoritmos a menudo usan distribuciones de probabilidad discretas como Bernoulli, Binomial y Multinomial. Además de estas, otras distribuciones discretas como Beta y Dirichlet son ampliamente utilizadas en ciencia de datos. La distribución Dirichlet, en particular, es esencial en Procesamiento del Lenguaje Natural (PLN).
+
+## Distribuciones de probabilidad discretas
+
+### Bernoulli
+
+Un ensayo de Bernoulli, nombrado en honor al matemático suizo Jacob Bernoulli, es un experimento aleatorio con exactamente dos resultados posibles: "éxito" y "fracaso". En este tipo de ensayo, la probabilidad de éxito (p) es constante en cada repetición del experimento, al igual que la probabilidad de fracaso (q), que también permanece constante. Estos ensayos son la base de la distribución de Bernoulli.
+
+Por ejemplo, lanzar una moneda justa representa un ensayo de Bernoulli. Si definimos "cara" como un éxito, entonces hay una probabilidad (p) de obtener un éxito en cada lanzamiento de la moneda.
+
+Otro ejemplo es lanzar un dado y obtener cualquier número excepto "1", que también se puede considerar un ensayo de Bernoulli, con una probabilidad de éxito (p) de obtener cualquier número excepto "1".
+
+#### Función de probabilidad
+
+```{r}
+# Probabilidad de éxito
+p <- 1/6
+
+# Crear un data frame para la probabilidad y distribución acumulada de Bernoulli
+bernoulli_df <- data.frame(
+  'x' = factor(c(-01, 0, 1, 2)),
+  'pmf' = c(0, 1 - p, p, 0)
+)
+bernoulli_df <- bernoulli_df %>%
+  mutate(c = cumsum(pmf))
+```
+
+```{r}
+# Gráfica para la FMP de Bernoulli
+ggplot(bernoulli_df[2:3,], aes(x, y = pmf)) +
+  geom_col() +
+  labs(x = "Resultado (0 = fracaso, 1 = éxito)", y = "P(X = x)", title = "Función de Probabilidad de Bernoulli") +
+  theme_bw()
+```
+
+```{r}
+# Gráfica para la distribución de probabilidad acumulada de Bernoulli
+ggplot(bernoulli_df[2:3,], aes(x, y = c)) +
+  geom_col() +
+  labs(x = "Resultado: 0 = fracaso, 1 = éxito", y = "Probabilidad (X <= x)", title = "Distribución de probabilidad acumulada de Bernoulli") +
+  theme_bw()
+```
+
+### Distribución Binomial
+
+Un proceso de Bernoulli es una secuencia de ensayos de Bernoulli independientes e idénticamente distribuidos. En cada ensayo, se obtiene un éxito (codificado como 1) con probabilidad (p) o un fracaso (codificado como 0) con probabilidad (q), donde (p) es constante en todos los ensayos. La independencia significa que el resultado de un ensayo no afecta el resultado de otro, y la constancia de la probabilidad de éxito asegura que los ensayos son idénticamente distribuidos.
+
+La distribución de Bernoulli es un caso particular de la distribución binomial, donde el número de ensayos es igual a 1.
+
+**Características de la Distribución Binomial:**
+
+\- Número fijo de ensayos ((n)).
+
+\- Cada ensayo es independiente.
+
+\- Probabilidad de éxito ((p)) es constante en cada ensayo.
+
+\- Variable aleatoria de interés es el número de éxitos en los (n) ensayos.
+
+#### Función de probabilidad o masa de probabilidad: dbinom()
+
+El dominio es el número de aciertos, que va desde 0 hasta (n). Define las probabilidades de acertar 0, 1, ... (n) veces en cada experimento.
+
+**Ejemplo:** Lanzar dos dados (2 ensayos) donde el éxito es obtener un 6. En este caso, se utilizaría la distribución binomial para calcular las probabilidades de acertar 0, 1 o 2 veces al obtener un 6 en los dos lanzamientos.
+
+```{r}
+dos_dados <- data.frame(x = 0:2, p_x = dbinom(0:2, 2, 1/6))
+dos_dados <- dos_dados %>%
+  mutate(c = cumsum(p_x))
+ggplot(dos_dados, aes(x, p_x)) +
+       geom_col() +
+       scale_x_continuous(breaks = 0:10) +
+       labs(x = "Nº de aciertos (obtener un seis)", y = "Probabilidad (X = x)", title = "Función de probabilidad Binomial: 2 ensayos independientes (tirar 2 dados)") +
+       theme_bw()
+```
+
+#### **Función de distribución acumulada (CDF): pbinom**
+
+```{r}
+ggplot(dos_dados, aes(x, c)) +
+       geom_col() +
+       labs(x = "Nº de aciertos (obtener un seis)", y = "Probabilidad (X <= k)", title = "Función de distribución acumulada Binomial n = 2") +
+       theme_bw()
+```
+
+#### **Cálculos de probabilidades y generación de variables. Funciones: pbinom, dexp, qexp, rexp**
+
+Experimento: Lanzar 10 monedas (ensayos = 10). Posibles éxitos, de 0 a 10
+
+```{r}
+#dbinom(x,           # Valores del eje X (x = 0, 1, 2, ..., n)
+#       size,        # Número de ensayos (n > = 0)
+#       prob,        # Probabilidad de éxito en cada ensayo
+#       log = FALSE) # Si TRUE, las probabilidades se devuelven como log
+```
+
+Ejemplo: Obtener 7 caras en 10 lanzamientos
+
+```{r}
+dbinom(7,          # 7 éxitos (caras)
+       10,         # 10 intentos
+       0.5)        # Probabilidad de éxito en cada ensayo
+```
+
+Ejemplo con vector
+
+```{r}
+dbinom(0:10,          # de 0 a 10 éxitos
+       10,         # 10 intentos
+       0.5)
+```
+
+```{r}
+ggplot(data.frame(x = 0:10, p_x = dbinom(0:10, 10, 0.5)),
+       aes(x, p_x)) +
+       geom_col() +
+       scale_x_continuous(breaks = 0:10) +
+       labs(x = "Nº de aciertos (obtener cara)", y = "Probabilidad (X = x)", title = "Función de probabilidad Binomial n = 10") +
+       theme_bw()
+```
+
+La función de distribución acumulada
+
+```{r}
+ggplot(data.frame(x = 0:10, p_x = pbinom(0:10, 10, 0.5)),
+       aes(x, p_x)) +
+       geom_col() +
+       scale_x_continuous(breaks = 0:10) +
+       labs(x = "Nº de aciertos (obtener cara)", y = "Probabilidad (X <= k)", title = "Función de distribución acumulada Binomial n = 10") +
+       theme_bw()
+```
+
+```{r}
+#pbinom(q,                 # Cuantil o vector de cuantiles: éxitos
+#       size,              # Número de experimentos (n > = 0)
+#       prob,              # Probabilidad de éxito en cada experimento
+#       lower.tail = TRUE, # Si TRUE, las probabilidades son P(X <= x), o P(X > x) en otro caso
+#       log.p = FALSE)     # Si TRUE, las probabilidades se devuelven como log
+```
+
+Ejemplo: Probabilidad de obtener 4 o menos caras en 10 monedas al aire
+
+```{r}
+pbinom(4,10,0.5)
+```
+
+#### **Cuantiles (Inversa de la probabilidad acumulada):**
+
+```{r}
+qbinom((seq(1,10)/10), 10, 0.5)
+```
+
+#### **Generación de experimentos aleatorios con rbinom**
+
+```{r}
+#rbinom(n,    # Número de observaciones aleatorias a ser generadas
+#       size, # Número de ensayos (> = 0) si = 1 Bernoulli
+#       prob) # La probabilidad de éxito en cada ensayo
+```
+
+Lanzar varias veces varias monedas:
+
+Consideraremos éxitos las caras. Si en cada observación, lanzamos dos monedas:
+
+```{r}
+# 10 Observaciones:
+# En cada ensayo podemos tener 0, 1 o 2 aciertos:
+set.seed(1)
+rbinom(10, 2, 0.5)
+```
+
+### Distribución Uniforme Discreta
+
+La distribución uniforme discreta es una distribución de probabilidad donde un número finito de valores son igualmente probables de ser observados; cada uno de los n valores tiene la misma probabilidad 1/n.
+
+#### **Cálculos de probabilidades y generación de variables aleatorias uniformes discretas**
+
+No existen las funciones punifd, dunifd, qunifd, runifd
+
+```{r}
+# Generar valores aleatorios
+runifd <- function(n, a, b) {
+  if (missing(n)) {
+    stop("El argumento 'n' es obligatorio.")
+  }
+  sample(a:b, n, replace = TRUE)
+}
+
+# Calcular fdp 
+dunifd <- function(x, a, b) {
+  ifelse(x >= a & x <= b, 1 / (b - a + 1), 0)
+}
+
+# Calcular CDF (distribución acumulada)
+punifd <- function(q, a, b) {
+  ifelse(q < a, 0, ifelse(q > b, 1, (q - a + 1) / (b - a + 1)))
+}
+```
+
+```{r}
+# Ejemplo de uso:
+# Generar 10 valores aleatorios con distribución uniforme discreta
+runifd(10, 1, 6)
+```
+
+```{r}
+# Calcular fdp para la secuencia 0:10
+sapply(0:10,a = 1,  b = 6, FUN = dunifd)
+```
+
+```{r}
+# Calcular CDF para q = 4
+cdf_q4 <- punifd(4, 1, 6)
+print(cdf_q4)
+```
+
+### **Distribución multinomial**
+
+**Función Multinomial en R**
+
+La función multinomial se utiliza para generar datos que siguen una distribución multinomial. Esta distribución es una generalización de la distribución binomial y modela la probabilidad de observar cada uno de varios resultados posibles en un número fijo de ensayos independientes, donde cada resultado puede pertenecer a más de dos categorías.
+
+Sintaxis de la función multinomial:
+
+rmultinom(n, size, prob)
+
+-   **n**: Número de muestras a generar.
+
+-   **size**: Número total de ensayos para cada muestra.
+
+-   **prob**: Vector de probabilidades que especifica las probabilidades de cada resultado.
+
+La generación de números aleatorios de una distribución multinomial se puede realizar utilizando la función **rmultinom**. Esta función simula la realización de varios ensayos independientes de una distribución multinomial con parámetros dados.
+
+**Ejemplo:** Supongamos que tenemos tres categorías y queremos simular 100 observaciones de una distribución multinomial con 5 ensayos cada una y probabilidades de éxito 0.2, 0.5 y 0.3 para las tres categorías, respectivamente.
+
+```{r}
+# Definir probabilidades para tres categorías
+probabilidades <- c(0.2, 0.5, 0.3)
+
+# Generar 100 observaciones multinomiales con 5 ensayos cada una
+resultados <- rmultinom(100, size = 5, prob = probabilidades)
+
+# Mostrar los primeros 10 resultados
+head(resultados)
+```
+
+En este ejemplo, **rmultinom(100, size = 5, prob = probabilidades)** generará una matriz de 100 filas y 3 columnas, donde cada fila representa el resultado de 5 ensayos independientes de una distribución multinomial con las probabilidades especificadas.
+
+**Interpretación:**
+
+-   Cada fila de la matriz representa una observación.
+
+-   Cada columna de la matriz representa el número de éxitos en una categoría específica.
+
+La función de distribución acumulada (CDF) de la distribución multinomial no se expresa de manera simple como en algunas distribuciones univariadas. La distribución multinomial involucra múltiples categorías y se vuelve más compleja. Sin embargo, podemos utilizar la función **dmultinom** para calcular la probabilidad acumulada para un conjunto dado de valores.
+
+**Ejemplo 1:** Supongamos que queremos calcular la probabilidad acumulada de obtener 2 éxitos en la primera categoría, 3 éxitos en la segunda categoría y 1 éxito en la tercera categoría, en 5 ensayos con probabilidades de éxito 0.2, 0.5 y 0.3, respectivamente.
+
+```{r}
+# Definir probabilidades para tres categorías
+probabilidades <- c(0.2, 0.5, 0.3)
+
+# Definir valores para los cuales calcular la probabilidad puntual
+valores <- c(2, 3, 0)
+
+# Tamaño de la muestra
+size <- 5
+
+# Calcular la probabilidad puntual
+prob_puntual <- dmultinom(valores, size = size, prob = probabilidades)
+
+# Mostrar la probabilidad puntual
+print(prob_puntual)
+```
+
+**Ejemplo 2:** Supongamos que ahora queremos calcular la probabilidad acumulada de obtener 1 éxito en la primera categoría, 2 éxitos en la segunda categoría y 2 éxitos en la tercera categoría, en 5 ensayos con las mismas probabilidades de éxito.
+
+```{r}
+# Definir probabilidades para tres categorías
+probabilidades <- c(0.2, 0.5, 0.3)
+
+# Definir valores para los cuales calcular la probabilidad puntual
+valores <- c(1, 2, 2)
+
+# Tamaño de la muestra
+size <- 5
+
+# Calcular la probabilidad puntual
+prob_puntual <- dmultinom(valores, size = size, prob = probabilidades)
+
+# Mostrar la probabilidad puntual
+print(prob_puntual)
+```
+
+### Distribución de Poisson
+
+La distribución de Poisson es una distribución de probabilidad discreta que modela el número de eventos que ocurrirán en un intervalo de tiempo o espacio específico. Es especialmente útil cuando se trabaja con eventos raros pero que suceden con una tasa constante. La distribución lleva el nombre del matemático francés Siméon Denis Poisson.
+
+**Función de Masa de Probabilidad (PMF):**
+
+La función de masa de probabilidad de Poisson está dada por la fórmula:
+
+![](http://127.0.0.1:38505/file_show?path=~%2FSAA%2FPr%C3%A1ctica%202%2Fimages%2FCaptura%20de%20pantalla%202023-11-26%20143356.png&id=52)
+
+donde:
+
+-   P(X=k) es la probabilidad de que ocurran k eventos,
+
+-   e es la base del logaritmo natural,
+
+-   λ es el parámetro de la tasa (número promedio de eventos en el intervalo),
+
+-   k es el número real de eventos que queremos evaluar.
+
+**Función de Distribución Acumulativa (CDF):**
+
+La función de distribución acumulativa de Poisson es la suma acumulativa de la PMF:
+
+![](http://127.0.0.1:38505/file_show?path=~%2FSAA%2FPr%C3%A1ctica%202%2Fimages%2FCaptura%20de%20pantalla%202023-11-26%20143602.png&id=53)
+
+**Parámetro Lambda** **(λ):**
+
+-   λ es la tasa promedio de ocurrencia de eventos en el intervalo dado.
+
+**Casos de Uso:**
+
+1.  **Procesos de Conteo:** La distribución de Poisson se utiliza para modelar eventos que ocurren independientemente en un intervalo fijo de tiempo o espacio.
+
+2.  **Biología:** Modela la distribución de células en una placa de cultivo o el número de desintegraciones radiactivas.
+
+3.  **Finanzas:** Puede usarse para modelar el número de eventos (por ejemplo, ejecuciones de órdenes) en un periodo de tiempo.
+
+4.  **Tráfico en Redes:** Modela el número de paquetes de datos que llegan a un enrutador en un intervalo de tiempo.
+
+**Ejemplo de Cálculo:**
+
+```{r}
+# Calcular la PMF de Poisson
+lambda <- 3
+k <- 2
+prob_poisson <- dpois(k, lambda)
+prob_poisson
+
+# Calcular la CDF de Poisson
+prob_acumulativa <- ppois(k, lambda)
+prob_acumulativa
+```
+
+Este código en R utiliza las funciones **dpois** y **ppois** para calcular la probabilidad puntual y acumulativa, respectivamente, de la distribución de Poisson.
+
+#### Ejemplos de cálculo de probabilidades a partir de la función de distribución acumulada.
+
+#### **Ejemplo 1:**
+
+Supongamos que estamos interesados en calcular la probabilidad de que, en un intervalo de 5 horas, ocurran hasta 6 eventos, y sabemos que la tasa promedio de ocurrencia de eventos es λ = 2.5 eventos por hora. Utilizaremos la función de distribución acumulada (CDF) de la distribución de Poisson para calcular esta probabilidad.
+
+```{r}
+# Tasa promedio de ocurrencia de eventos
+lambda <- 2.5
+
+# Número máximo de eventos deseados
+k_max <- 6
+
+# Intervalo de tiempo
+tiempo <- 5  # horas
+
+# Cálculo de la probabilidad acumulada utilizando la CDF de Poisson
+probabilidad_acumulada <- ppois(k_max, lambda * tiempo)
+print(probabilidad_acumulada)
+```
+
+En este ejemplo, ppois es la función que calcula la probabilidad acumulada en la distribución de Poisson. La probabilidad obtenida es la probabilidad de que ocurran hasta 6 eventos en un periodo de 5 horas.
+
+**Ejemplo 2:**
+
+Vamos a simular la probabilidad acumulada de que ocurran hasta 4 eventos en un intervalo de 2 horas con una tasa promedio de λ = 1.8 eventos por hora.
+
+```{r}
+# Tasa promedio de ocurrencia de eventos
+lambda <- 1.8
+
+# Número máximo de eventos deseados
+k_max <- 4
+
+# Intervalo de tiempo
+tiempo <- 2  # horas
+
+# Cálculo de la probabilidad acumulada utilizando la CDF de Poisson
+probabilidad_acumulada_simulada <- ppois(0:k_max, lambda * tiempo)
+print(probabilidad_acumulada_simulada)
+```
+
+Este ejemplo utiliza ppois para calcular la probabilidad acumulada de que ocurran 0, 1, 2, 3 o 4 eventos en un periodo de 2 horas con una tasa promedio de 1.8 eventos por hora.
+
+## Covarianza y Correlación
+
+### Covarianza
+
+Para una muestra de n datos bivariantes (x1,y1),....,(xn,yn) la covarianza entre dos variables (x, y) es:
+
+![](images/Captura%20de%20pantalla%202023-12-11%20155520.png)
+
+Es una medida de la fuerza de la relación entre dos variables cuantitativas. Si la covarianza es positiva, existe una relación creciente entre x e y, si es negativa, la relación será decreciente.
+
+Con la función: cov()
+
+Ejemplo: Relación entre tamaño y fuerza en LOTR (TOP TRUMPS)
+
+```{r}
+lotr<- read.csv("https://raw.githubusercontent.com/jesusturpin/curintel2324/main/data/lotr.csv")
+cov(lotr$tamano,lotr$fuerza)
+```
+
+En la covarianza, el signo es lo importante y no el valor numérico. Los datos vendrán con diferentes unidades y tendrán diferente significado, solo mide en qué dirección varían los datos.
+
+### Correlación
+
+El cálculo de correlación más conocido es coeficiente de correlación de Pearson, aplicado a dos variables cuantitativas y mide la **dependencia lineal** entre ellas.
+
+Como la varianza solo informa de la dirección en la que varían los datos, dividiendo la covarianza por el producto la desviación estándar de x e y, obtenemos un coeficiente de correlación que varía entre -1 y 1, siendo -1 y 1 una relación lineal perfecta entre ambas variables.
+
+Matemáticamente:
+
+![](images/Captura%20de%20pantalla%202023-12-11%20160113.png)
+
+Valores próximos a cero indican que ambas variables son independientes, mientras que valores próximos a 1 indican que si la variable x aumenta y lo hará también y de una forma lineal (la relación funcional que liga y y xi es aproximadamente una recta). Si el valor del coeficiente fuese próximo a -1, aumentos de la variable xi irían aparejados de descensos (lineales) de la variable respuesta y.
+
+Aplicando la función cor:
+
+```{r}
+cor(lotr$tamano, lotr$fuerza)
+```
+
+### **Matriz de correlación**
+
+Realizar el cálculo de correlación entre todas las variables de un data frame, podría ser algo tedioso. Afortunadamente, podemos calcular y visualizar la matriz de correlación mediante funciones que R tiene para ello.
+
+```{r}
+lotr_sin_anillo <- lotr %>%
+  filter(nombre != "EL_ANILLO_UNICO")
+lotr_sin_anillo %>%
+  select_if(is.numeric) %>%
+  filter(tamano > 1) %>%
+  cor()
+```
+
+## **Conceptos Básicos sobre Regresión:**
+
+**Problemas Abordados:**
+
+-   **Regresión:** Predecir valores continuos.Por ejemplo:
+
+    \- Predicción de precios de una casa.
+
+    \- Estimación del tiempo para completar una tarea.
+
+    \- Pronóstico de ventas o demanda de productos.
+
+-   **Clasificación:** Asignar categorías a los datos. Por ejemplo:
+
+    -   Diagnóstico médico (maligno/benigno).
+    -   Reconocimiento de imágenes (perro, gato, pájaro).
+    -   Aprobación de crédito.
+
+### **Regresión**
+
+La regresión es una herramienta estadística para explorar y establecer relaciones entre variables. Tipos de regresión incluyen:
+
+\- **Regresión Lineal:** Relación lineal entre variables.
+
+\- **Regresión Logística:** Para predecir variables categóricas (sí/no).
+
+\- **Regresión Polinomial:** Relaciones no lineales.
+
+### **Modelo**
+
+\- Ecuación o función matemática que describe la relación entre variables.
+
+\- Construido para predecir o explicar fenómenos en ciencia de datos.
+
+### **Tipos de Variables:**
+
+\- **Variable Objetivo:** Se estima mediante el modelo (también: variable de respuesta, dependiente).
+
+\- **Variables Predictoras:** Información para la predicción (también: variable explicativa, independiente).
+
+### **Modelo de Regresión Lineal Simple**
+
+\- Relación entre dos variables: una independiente (causa presumida) y una dependiente (efecto).
+
+\- Ecuación: ( Y = a + bX ), donde:
+
+\- Y: Variable dependiente a predecir.
+
+\- X: Variable independiente usada para la predicción.
+
+\- a: Intersección con el eje Y (ordenada en el origen).
+
+\- b: Pendiente, indica el cambio promedio en ( Y ) cuando ( X ) cambia en una unidad.
+
+Mínimos cuadrados: Proceso para encontrar los valores de ( a ) y ( b ) que mejor se ajusten a los datos.
+
+La regresión lineal simple es fundamental para predecir y tomar decisiones basadas en datos.
+
+### ¿Cómo se obtiene el modelo analíticamente: encontrar los valores a y b?
+
+![](images/Captura%20de%20pantalla%202023-12-11%20161425.png)
+
+Ejemplo: Regresión lineal fuerza vs tamaño (Excluyendo el anillo):
+
+```{r}
+b <- sum((lotr_sin_anillo$tamano - mean(lotr_sin_anillo$tamano)) * 
+  (lotr_sin_anillo$fuerza - mean(lotr_sin_anillo$fuerza))
+) / 
+  sum((lotr_sin_anillo$tamano - mean(lotr_sin_anillo$tamano))**2)
+b
+```
+
+```{r}
+b <- cov(lotr_sin_anillo$tamano, lotr_sin_anillo$fuerza) /
+  var(lotr_sin_anillo$tamano)
+b
+```
+
+```{r}
+a <- mean(lotr_sin_anillo$fuerza) - b * mean(lotr_sin_anillo$tamano)
+a
+```
+
+### ¿Cómo se obtiene el modelo en R?
+
+```{r}
+modelo_f_tam <- lm(fuerza ~ tamano, data = lotr_sin_anillo)
+modelo_f_tam
+```
+
+Otro ejemplo: relación entre convivencia y locura:
+
+```{r}
+modelo_conv_loc <- lm(Convivencia ~ Locura, data = lqsa)
+modelo_conv_loc
+```
+
+```{r}
+lqsa %>%
+  mutate(pred_convivencia = predict(modelo_conv_loc, newdata = lqsa)) %>%
+  ggplot(aes(x = Locura, y = Convivencia)) +
+  geom_point(aes(x = Locura, y = Convivencia), size = 2) +
+  labs(
+    title = "Convivencia vs Locura",
+    x = "Locura",
+    y = "Convivencia"
+  ) +
+  geom_line(aes(x = Locura, y = pred_convivencia), color = "blue", size = 1) +
+  geom_segment(aes(xend = Locura, yend = pred_convivencia), color = "red", linetype = "dashed", size = 1, alpha = 0.5) +
+  theme_bw()
+```
+
+# **El modelo de regresión lineal simple**
+
+### **Las métricas principales del modelo**
+
+```{r}
+mdl_lqsa_conv_vs_locura <- lm(formula = Convivencia ~ Locura, data = lqsa)
+mdl_lqsa_conv_vs_locura
+```
+
+#### **Coeficiente de determinación R cuadrado (r-squared)**
+
+![](images/Captura%20de%20pantalla%202023-12-11%20164259.png)
+
+En el caso de la regresión lineal simple, coincide con el coeficiente de correlación al cuadrado.
+
+```{r}
+r_squared <- lqsa %>%
+  mutate(Conv_pred = predict(object = mdl_lqsa_conv_vs_locura, 
+                        newdata = select(., Locura))) %>%
+  summarise(r_squared = 1-sum((Convivencia - Conv_pred)**2) /
+            sum((Convivencia - mean(Convivencia))**2)) %>% pull()
+r_squared
+```
+
+La regresión lineal calcula una ecuación que minimiza la distancia entre la línea del modelo y los puntos de los datos reales. La medida estadística clave es el coeficiente de determinación, también conocido como r-cuadrado.
+
+**Coeficiente de Determinación (r-cuadrado)**:
+
+-   Indica la cercanía entre los datos y la línea de regresión ajustada.
+
+-   También llamado coeficiente de determinación.
+
+-   Puede escribirse como r-squared o R-squared dependiendo del contexto.
+
+-   Representa el porcentaje de varianza explicada por el modelo.
+
+-   Valores entre 0 y 1:
+
+    -   1: Ajuste perfecto.
+
+    -   0: El modelo no explica la variabilidad de los datos.
+
+-   En general, un r-cuadrado mayor indica un mejor ajuste del modelo a los datos.
+
+**Cálculo:**
+
+-   Se obtiene elevando al cuadrado la correlación entre las variables.
+
+Es importante relativizar el r-cuadrado al contexto de los datos. Un valor de 0.5 puede ser suficiente en algunas situaciones, mientras que en otras puede indicar pura aleatoriedad.
+
+#### **Coeficiente de determinación ajustado R cuadrado ajustado**
+
+**Regresión Simple y Coeficiente de Determinación Ajustado:**
+
+En regresión simple, si la muestra es lo suficientemente grande, el coeficiente de determinación ajustado R-cuadrado ajustado es muy similar al R-cuadrado, aunque varía ligeramente debido al uso de n-1. Este coeficiente cobra más sentido cuando se utilizan más variables predictoras k en la fórmula, ya que el R-cuadrado tiende a aumentar con k, incluso si algunas de esas variables tienen poca influencia sobre la variable de respuesta.
+
+A diferencia de R-cuadrado, el R-cuadrado ajustado no está limitado entre 0 y 1. Puede ser negativo si el número de variables es grande en comparación con el número de filas, especialmente si el R-cuadrado es bajo. Esto ocurre cuando se añaden variables que no mejoran significativamente la capacidad del modelo para explicar la variabilidad de la variable de respuesta.
+
+En resumen, el R-cuadrado ajustado corrige el R-cudrado teniendo en cuenta el número de variables en el modelo, proporcionando una medida más robusta del ajuste del modelo a los datos.
+
+![](images/Captura%20de%20pantalla%202023-12-11%20165536.png)
+
+```{r}
+n <- nrow(lqsa)
+k <- 1 # Grados de libertad (nº de var. ind.)
+adj_r_squared <- 1 - ( (n-1)/(n-k-1) )*(1 - r_squared)
+adj_r_squared
+```
+
+#### **Error residual estándar (RSE / sigma): Grados de libertad**
+
+Otra métrica del modelo es el error residual estándard. Es la diferencia "estándar" entre el valor real y el ajustado por el modelo. Para calcularlo, se eleva al cuadrado el vector de residuos y se realiza la suma total y se calcula la raíz cuadrada y se divide por los grados de libertad (nº de observaciones - nº de coeficientes del modelo).
+
+Lo que representa es por cuánto se equivoca el modelo.
+
+![](images/Captura%20de%20pantalla%202023-12-11%20165701.png)
+
+```{r}
+residuos <- residuals(mdl_lqsa_conv_vs_locura)
+n <- length(residuos)
+p <- length(coef(mdl_lqsa_conv_vs_locura))
+
+# Calcula el RSE
+RSE <- sqrt(sum(residuos^2) / (n - p))
+RSE
+```
+
+#### **Error cuadrático medio (RMSE)**
+
+Se calcula con la misma fórmula que RSE pero dividiendo por el número de observaciones, no por los grados de libertad. Es más frecuente usar RSE.
+
+```{r}
+RMSE <- sqrt(sum(residuos^2) / (n))
+RMSE
+```
+
+### **Funciones para analizar modelos y métricas detalladas**
+
+#### **Generales**
+
+-   summary(): muestra las métricas detalladas del modelo
+
+```{r}
+resumen_mdl <- summary(mdl_lqsa_conv_vs_locura)
+resumen_mdl
+```
+
+-   broom::tidy(): Muestra información algo más resumida que summary y en formato tabular
+
+```{r}
+broom::tidy(mdl_lqsa_conv_vs_locura)
+```
+
+-   Glance:
+
+```{r}
+glance(mdl_lqsa_conv_vs_locura)
+```
+
+1.  **Sigma:**
+
+    -   Estimación de la desviación estándar de los errores.
+
+    -   Fórmula: n-k-1
+
+    -   n: Número de observaciones.
+
+    -   k: Número de variables predictoras.
+
+2.  **statics.F-Statistic:**
+
+    -   Parámetro que compara dos modelos: uno con todos los coeficientes y otro sin predictor.
+
+    -   Evalúa si el modelo que incluye los predictores explica mejor la variabilidad de la variable dependiente.
+
+    -   Aceptación basada en un nivel de significancia preestablecido.
+
+3.  **P-Value:**
+
+    -   Se obtiene a partir del F-Statistic usando la distribución F.
+
+    -   Es la probabilidad de encontrar un valor tan extremo o más que F-Statistic según la distribución F.
+
+    -   Utiliza la función de distribución de probabilidad acumulada pf.
+
+4.  **df:**
+
+    -   Grados de libertad, que son el número de variables predictoras.
+
+5.  **logLik:**
+
+    -   Logaritmo de la verosimilitud del modelo.
+
+    -   Mide cuán bien se ajusta el modelo a los datos.
+
+    -   Utilizado en la comparación de modelos junto con AIC y BIC.
+
+    -   Un valor más alto indica un mejor ajuste.
+
+6.  **AIC:**
+
+    -   Criterio de selección de modelos que considera la bondad de ajuste y la complejidad del modelo.
+
+    -   Se utiliza para comparar modelos, prefiriendo un valor más bajo.
+
+7.  **BIC:**
+
+    -   Similar al AIC, penaliza la complejidad del modelo.
+
+    -   Utilizado para comparar modelos, prefiriendo un valor más bajo.
+
+8.  **Deviance:**
+
+    -   Medida de la falta de ajuste del modelo en comparación con un modelo nulo.
+
+    -   Cuanto menor sea la deviance, mejor se ajusta el modelo a los datos.
+
+9.  **df.residual:**
+
+    -   Grados de libertad residuales, representan el número de observaciones menos el número de coeficientes en el modelo.
+
+10. **nobs:**
+
+    -   Número total de observaciones en el modelo.
+
+### **Funciones y datos más específicos**
+
+-   Coeficientes: coefficients()
+
+```{r}
+coefficients(mdl_lqsa_conv_vs_locura)
+```
+
+-   Ajuste - Fitted values: fitted()
+
+```{r}
+fitted(mdl_lqsa_conv_vs_locura) %>% head() # Lo mismo que llamar a predict, con los datos de la variable explicativa
+```
+
+-   Residuos residuals():
+
+Nos genera un vector con las diferencias entre los valores originales del dataset y los valores ajustados por el modelo
+
+```{r}
+residuals(mdl_lqsa_conv_vs_locura) %>% head()
+```
+
+-   Varianza residual:
+
+```{r}
+resumen_mdl$sigma**2 # Para la fórmula de la varianza, se usa n-p
+```
+
+```{r}
+media_residuos <- mean(residuals(mdl_lqsa_conv_vs_locura)**2)
+media_residuos
+```
+
+```{r}
+media_residuos * 30 / 28
+```
+
+-   augment: Obtiene métricas específicas para cada dato.
+
+```{r}
+#augment(mdl_lqsa_conv_vs_locura) %>% head()
+```
+
+1.  **Convivencia (Variable Objetivo):**
+    -   Variable que se pretende estimar mediante el modelo.
+    -   También llamada variable de respuesta o variable dependiente.
+2.  **Locura (Variable Explicativa):**
+    -   Variable utilizada para hacer la predicción.
+    -   También llamada variable explicativa o variable independiente.
+3.  **.fitted:**
+    -   Los valores ajustados (o predicciones) del modelo.
+    -   Representan los valores predichos por el modelo para la variable objetivo.
+4.  **.resid:**
+    -   Los residuos del modelo.
+    -   Un residuo es la diferencia entre el valor observado de la variable dependiente y el valor ajustado (predicho) por el modelo.
+5.  **.hat:**
+    -   Los valores de apalancamiento.
+    -   Miden la influencia de cada observación en el ajuste del modelo.
+    -   Cuanto mayor es el valor de .hat, mayor es la influencia de esa observación.
+    -   Importantes para identificar valores atípicos.
+6.  **.sigma:**
+    -   Estimación de la desviación estándar de los residuos del modelo.
+    -   En cada observación, .sigma excluye la observación en cuestión de la estimación.
+    -   Útil para entender la variabilidad de los residuos.
+7.  **.cooksd:**
+    -   Las distancias de Cook.
+    -   Miden la influencia de cada observación en el conjunto de parámetros estimados del modelo.
+    -   Una alta distancia de Cook indica una observación influyente, cuya eliminación podría cambiar significativamente la estimación de los coeficientes.
+8.  **.std.resid:**
+    -   Los residuos estandarizados.
+    -   Son los residuos divididos por su desviación estándar estimada.
+    -   Útiles para identificar valores atípicos y verificar si los residuos cumplen con las suposiciones del modelo.

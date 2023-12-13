@@ -1,0 +1,693 @@
+---
+title: "Manual Personal PRIA"
+author: "Juan Sahorí Merino"
+format: html
+editor: visual
+---
+
+## Directorio de trabajo
+
+Para ver cuál es el directorio de trabajo actual:
+
+```{r}
+getwd()
+```
+
+## Instalación de paquetes
+
+Para instalar paquetes:
+
+```{r}
+#install.packages("tidyverse")
+```
+
+## Cargar paquetes:
+
+Para cargar paquetes, los paquetes hay que cargarlos cada vez que haya una nueva sesión:
+
+```{r}
+library(tidyverse)
+```
+
+## Usar objetos:
+
+En R, podemos definir objetos usando el `<-`operador.
+
+```{r}
+x <- 6
+```
+
+También podemos crear objetos con definiciones más complejas. `c()`es una función que permite a R *concatenar* o agrupar los contenidos enumerados dentro de la función.
+
+```{r}
+y <- c(1,2,3,4,5)
+```
+
+Y elegir nombres de objetos más complejos (los nombres de una sola letra están mal vistos).
+
+```{r}
+numbers <- c(1,2,3,4,5)
+```
+
+Podemos realizar tareas en objetos complejos
+
+```{r}
+mean(numbers)
+numbers + 1
+sum(numbers)
+```
+
+Ttambién podemos definir estas tareas como objetos. Recorrdar que el nombre del objeto lo determinamos nosotros (aunque existen limitaciones en cuanto a los nombres utilizables)
+
+```{r}
+numbers.mean <- mean(numbers)
+numbers.add1 <- numbers + 1
+numbers.sum <- sum(numbers)
+```
+
+Para combinar estos objetos en un solo conjunto de datos:
+
+```{r}
+data <- tibble(numbers,numbers.add1,numbers.mean,numbers.sum)
+data
+```
+
+## Operador Pipe (%\>%)
+
+Las canalizaciones son una herramienta conveniente para organizar el estilo de codificación de sintaxis de tidyverse. Para comprender qué hace una tubería, primero debemos comprender algo de sintaxis de Base R.
+
+Hay que recordar que un conjunto de datos es un grupo de variables relacionadas. Es decir, cada variable representa una columna y cada fila representa una observación única.
+
+Los conjuntos de datos de Base R se denominan **marcos de datos** o **df**. Así es como se estructuran los datos en R de forma predeterminada. Los conjuntos de datos de estilo Tidyverse se denominan **tibbles** o **tbl**.
+
+Las tuberías son una herramienta de acceso directo que utiliza el paquete conocido como **tidyverse** para una codificación más eficiente y una mejor legibilidad para el usuario. Al presionar **Enter** después de una tubería, se sangrará automáticamente y se organizará su código de manera legible.
+
+Por ejemplo, digamos que quiero crear una nueva variable llamada Mililitros desde una variable que contenga valores de la variable Litros. También quiero crear una nueva variable llamada Decilitros a partir de Litros:
+
+Base R:
+
+```{r}
+df <- data.frame(Litros = c(1:10))
+df$Mililitros <- df$Litros*1000
+df$Decilitros <- df$Litros*10
+df
+```
+
+-   Lea el código anterior como: Estoy definiendo Mililitros (como una nueva variable en `df`) como Litros (obtenidos de un objeto de datos llamado `df`) multiplicados por 1000. Luego, estoy definiendo Decilitros como (como una nueva variable en `df`) como Litros (obtenidos de `df`) multiplicado por 10
+
+-   El signo de dólar indica que la palabra que sigue al dólar se encuentra dentro de la palabra anterior al signo de dólar.
+
+Tidyverse R:
+
+```{r}
+df %>%
+  mutate(Mililitros = Litros * 1000,
+         Decilitros = Litros * 10)
+```
+
+El anterios código se lee como:
+
+Dentro de mi objeto de datos, quiero mutar/cambiar cosas creando una variable llamada "Mililitros". Mililitros se basa en la variable disponible actualmente, Litros. Específicamente, los valores de mililitros deben ser litros multiplicados por 1000. También quiero crear una nueva variable llamada "Decilitros" a partir de los valores de litros multiplicados por 10
+
+## Tipos de datos
+
+Hay muchos tipos estructurales diferentes de datos. Es decir, los datos pueden ser numéricos, caracteres alfabéticos, booleanos (solo valores VERDADEROS o FALDOS), categóricos, etc. Podríamos referirnos a los datos como una sola variable, pero también podríamos tener datos que tengan múltiples variables (es decir, un conjunto de datos). En esta sección, analizaremos los tipos comunes de datos y cuándo se utilizan y para qué se utilizan.
+
+### Vector
+
+Es una **estructura de datos que contiene un solo tipo de valores** (por ejemplo, todos los caracteres alfabéticos o todos los tipos numéricos). Si se combinan varios vectores, se puede crear un conjunto de datos. Cada columna dentro de un conjunto de datos es un vector. Por sí sola, cada columna de forma aislada simplemente nos proporciona un montón de valores. Combinar múltiples vectores para formar un conjunto de datos puede representar una historia de esos valores.
+
+Digamos que tenemos:
+
+-   Un vector que contiene los **nombres** de cada tema.
+
+-   Un vector que contiene el color **de cabello** para cada sujeto.
+
+-   Un vector que contiene **Edad** para cada sujeto
+
+-   Un vector que contiene un valor VERDADERO/FALSO llamado **Humano**
+
+Cuando miras cada vector individual por separado, es solo una lista de números/palabras. Si junta los tres vectores, puede crear un conjunto de datos. **Los conjuntos de datos implican cierto orden en las filas Y columnas.** Veamos un ejemplo.
+
+Digamos que:
+
+-   Sam tiene cabello castaño, tiene 24 años y es humano.
+
+-   Tina tiene el pelo negro, tiene 41 años y es un conejo.
+
+-   Alex tiene cabello rubio, tiene 2 años y es un ser humano.
+
+Debemos asegurarnos de que cada dato permanezca en manos de la persona pertinente; por lo tanto, el orden de los valores de cada vector será importante cuando juntemos los vectores. Por ejemplo, todos los valores relacionados con Sam deben organizarse primero en cada vector.
+
+```{r}
+## Definimos tres objetos como vectores
+# Un vector contiene "Nombres"
+Nombres <- c("Sam", "Tina", "Alex") 
+
+# Un vector contiene valores de tipo character(caracteres) que representan "Color de Pelo"
+Pelo <- c("Castaño", "Negro", "Rubio")
+
+# Un vector contiene valores de tipo numeric(numericos) representando "Edad"
+Edad <- c(24, 41, 2) 
+
+# Un vector que contiene TRUE/FALSE (T/F) valores que representando humano/no humano
+Humano <- c(TRUE, FALSE, TRUE)
+
+## Executamos tres lineas de codigo para ver las definiciones de estos objetos en consola
+Nombres
+Pelo
+Edad
+Humano
+
+## Definimos un objecto llamado mydataset
+# Este dataset combina los cuatro vectores definidos previamente
+mydataset <- tibble(Nombres, Pelo, Edad, Humano) 
+
+## Vista del dataset en la consola
+mydataset
+```
+
+### Factores
+
+Un factor es otra estructura variable. Los factores clasifican los valores de cadenas de caracteres para una variable determinada. Para determinar si una variable debe ser un factor, hay que preguntarse: ¿Los valores de esta variable pertenecen a categorías?
+
+Ejemplo: A partir del vector c("High", "Low", "High","Low", "Medium"), utiliza los niveles c("Low", "Medium", "High"), aplica orden y guárdalo en el vector factor_temperature_vector
+
+```{r}
+temperature_vector <- c("High", "Low", "High","Low", "Medium")
+factor_temperature_vector <- factor(temperature_vector, order = TRUE,
+                                    levels = c("Low", "Medium", "High"))
+factor_temperature_vector
+```
+
+## Introducción a Tidyverse
+
+El paquete tidyverse en realidad contiene otros paquetes (**dplyr**,**ggplot2**, etc.) y lo verá cuando cargue el paquete **tidyverse** usando `library()`
+
+```{r}
+library(tidyverse)
+```
+
+### Gestión básica de datos
+
+#### mutate()
+
+Agrega nuevas columnas o modifica variables actuales en el conjunto de datos.
+
+Digamos que quiero crear tres nuevas variables en el conjunto de datos "diamonds":
+
+1.  Una variable llamada `JustOne`donde están todos los valores dentro de la columna `1`.
+
+2.  Una variable llamada `Values`donde todos los valores internos son `something`:
+
+3.  Una variable llamada `Simple`donde todos los valores son iguales`TRUE`
+
+```{r}
+diamonds %>% 
+  mutate(JustOne = 1,
+         Values = "something",
+         Simple = TRUE)
+```
+
+`mutate()`se puede utilizar para crear variables **basadas en variables existentes** del conjunto de datos.
+
+```{r}
+diamonds %>% 
+  mutate(price200 = price - 200)
+```
+
+#### recode()
+
+Modifica los valores dentro de una variable. La estructura básica es:
+
+data %\>% mutate(Variable = recode(Variable, "old value" = "new value"))
+
+```{r}
+diamonds %>% 
+  mutate(cut.new = recode(cut,
+                          "Ideal" = "IDEAL",
+                          "Fair" = "Okay",
+                          "Premium" = "pizza"))
+```
+
+#### summarize()
+
+Colapsa todas las filas y devuelve un resumen de una fila
+
+En el siguiente **ejemplo** , `summarize()`nos permite calcular el precio medio de todos los diamantes dentro de nuestro conjunto de datos.
+
+```{r}
+diamonds %>% 
+  summarize(avg.price = mean(price))
+```
+
+De manera similar a `mutate()`, también podemos realizar múltiples operaciones `summarize()`y anidar otras funciones útiles dentro de él:
+
+```{r}
+diamonds %>% 
+  summarize(avg.price = mean(price),
+            dbl.price = mean(price) * 2,
+            random.add = 1 + 2,
+            avg.carat = mean(carat),
+            stdev.price = sd(price))
+```
+
+#### group_by() y ungroup()
+
+Toma datos existentes y agrupa variables específicas para operaciones futuras. Muchas operaciones se realizan en grupos.
+
+**Ejemplo** : agrupar por edad y sexo (masculino/femenino) puede ser útil en un conjunto de datos si nos importa cómo calificaron las mujeres de una determinada edad en comparación con los hombres de una determinada edad (o comparar edades dentro de los hombres o dentro de las mujeres).
+
+```{r}
+## Creating identification number to represent 50 individual people
+ID <- c(1:50)
+
+## Creating sex variable (25 males/25 females)
+Sex <- rep(c("male", "female"), 25) # rep stands for replicate
+
+## Creating age variable (20-39 year olds)
+Age <- c(26, 25, 39, 37, 31, 34, 34, 30, 26, 33, 
+         39, 28, 26, 29, 33, 22, 35, 23, 26, 36, 
+         21, 20, 31, 21, 35, 39, 36, 22, 22, 25, 
+         27, 30, 26, 34, 38, 39, 30, 29, 26, 25, 
+         26, 36, 23, 21, 21, 39, 26, 26, 27, 21) 
+
+## Creating a dependent variable called Score
+Score <- c(0.010, 0.418, 0.014, 0.090, 0.061, 0.328, 0.656, 0.002, 0.639, 0.173, 
+           0.076, 0.152, 0.467, 0.186, 0.520, 0.493, 0.388, 0.501, 0.800, 0.482, 
+           0.384, 0.046, 0.920, 0.865, 0.625, 0.035, 0.501, 0.851, 0.285, 0.752, 
+           0.686, 0.339, 0.710, 0.665, 0.214, 0.560, 0.287, 0.665, 0.630, 0.567, 
+           0.812, 0.637, 0.772, 0.905, 0.405, 0.363, 0.773, 0.410, 0.535, 0.449)
+
+## Creating a unified dataset that puts together all variables
+data <- tibble(ID, Sex, Age, Score)
+```
+
+Digamos que quiero calcular/comparar el promedio `Score`(y otras medidas) para hombres y mujeres por separado:
+
+```{r}
+data %>% 
+  group_by(Sex) %>% 
+  summarize(m = mean(Score), # calculates the mean
+            s = sd(Score),   # calculates the standard deviation
+            n = n()) %>%     # calculates the total number of observations
+  ungroup()
+```
+
+En el código anterior, hemos agrupado por `Sex`, lo que significa que los cálculos realizados con nuestros datos tendrán en cuenta a hombres y mujeres por separado. Después de la ejecución del código, la consola muestra la media `Score`, la desviación estándar ( `sd`) y el número total de participantes ( `n()`) para mujeres y hombres ( `group_by(Sex)`). Es decir, la media `Score`de las mujeres es 0,437 y la media `Score`de los hombres es 0,487.
+
+#### filter()
+
+Conservar únicamente filas específicas de datos que cumplan con los requisitos especificados.
+
+Mostrar únicamente datos del `diamonds`conjunto de datos que tengan un `cut`valor Regular
+
+```{r}
+diamonds %>% filter(cut == "Fair")
+```
+
+Solo muestre datos de diamantes que tengan un `cut`valor Regular o Bueno y un precio igual o inferior a \$600 (observe cómo la declaración o se obtiene con \| mientras que la declaración y se logra mediante una coma):
+
+```{r}
+diamonds %>%
+  filter(cut == "Fair" | cut == "Good", price <= 600)
+```
+
+Un método alternativo que logra el mismo resultado:
+
+```{r}
+diamonds %>%
+  filter(cut %in% c("Fair", "Good"), price <= 600)
+```
+
+#### select()
+
+Selecciona solo las columnas (variables) que desea ver. Elimina todas las demás columnas. Puede hacer referencia a las columnas por la posición de la columna (primera columna) o por su nombre. El orden en el que enumera los nombres/posiciones de las columnas es el orden en que se mostrarán las columnas.
+
+En el conjunto de datos `diamonds`, conserve únicamente el corte y el color:
+
+```{r}
+diamonds %>% select(cut, color)
+```
+
+Conserve únicamente las primeras cinco columnas:
+
+```{r}
+diamonds %>% select(1:5)
+```
+
+Conserve todas las columnas excepto la de corte:
+
+```{r}
+diamonds %>% select(-cut)
+```
+
+También puede conservar todas las columnas, pero reorganizar algunas de ellas para que aparezcan al principio; esto mueve las variables x,y,z a las primeras 3 columnas:
+
+```{r}
+diamonds %>% select(x,y,z, everything())
+```
+
+#### arrange()
+
+Permite organizar valores dentro de una variable en orden ascendente o descendente (si eso es aplicable a sus valores). Esto puede aplicarse tanto a valores numéricos como a valores no numéricos.
+
+Organizar `cut`por orden alfabético (A a Z):
+
+```{r}
+diamonds %>% arrange(cut)
+```
+
+Organizar `cut`en orden alfabético descendente:
+
+```{r}
+diamonds %>% arrange(desc(cut))
+```
+
+### Gestión avanzada de datos
+
+#### count()
+
+Contrae las filas y cuenta el número de observaciones por grupo de valores
+
+Cuente el número de valores para cada uno `cut`:
+
+```{r}
+diamonds %>% count(cut) 
+```
+
+#### rename()
+
+Cambia el nombre de una columna/variable
+
+Cambia el nombre de la variable de precio como `PRICE`(observe que la **nueva etiqueta va primero** en el argumento).
+
+```{r}
+diamonds %>% rename(PRICE = price)
+```
+
+## Gráficos
+
+Comencemos creando un conjunto de datos de muestra:
+
+```{r}
+## Creating an object named Subject 
+Subject <- c("Wendy", "Wendy", "Wendy", # you can press ENTER to auto-indent 
+             "John", "John", "John",    # the code. This produces better 
+             "Helen", "Helen", "Helen") # formatting for the user.
+
+## Creating an object named Date
+Date <- c("2019-08-08", "2019-09-05", "2019-12-07", "2019-08-08", 
+          "2019-09-05", "2019-12-07", "2019-08-08", "2019-09-05", "2019-12-07")
+
+## Creating an object named Score
+Score <- c(2, 15, 34,
+           5, 10, 27,
+           16, 8, 40)
+
+## Creating an object
+mydata <- tibble(Subject, Date, Score) 
+```
+
+Elijamos dos variables ( `Subject`y `Score`) para graficar `mydata`
+
+```{r}
+ggplot(mydata, aes(x = Subject, y = Score)) + 
+  geom_point()
+```
+
+Si bien podría ser interesante representar gráficamente todas las puntuaciones de Helen, John y Wendy, otra gráfica útil podría ser ver las **puntuaciones promedio de cada persona** . Hay al menos **dos** formas de configurar su gráfico:
+
+1.  Usando el método `stat_summary`
+
+Uno de los métodos clásicos para graficar es mediante el uso de la `stat_summary()`función. Comenzamos usando la `ggplot()`función, que requiere el nombre del conjunto de datos que usaremos `mydata`en nuestro ejemplo anterior, seguida de la `aes()`función que abarca las especificaciones de la variable `x`y `y`. A continuación, agregamos la `stat_summary()`función. Para esta función, especificamos que queremos calcular el `mean`eje `y`en el primer argumento ( `fun.y`pregunta qué función usar para la variable y). Luego, especificamos qué elemento gráfico/geométrico trazar. Aquí especificamos que queremos puntos (otras opciones podrían ser barra, línea, etc.).
+
+```{r}
+ggplot(mydata, aes(x = Subject, y = Score)) +
+  stat_summary(fun.y = "mean", geom = "point")
+```
+
+2.  Usando el método `tidyverse`
+
+El método `tidyverse` requiere un poco más de planificación y preparación que el `stat_summary`método, pero el resultado final es el mismo.
+
+```{r}
+mydata %>%
+  group_by(Subject) %>%
+  summarize(m = mean(Score)) %>%
+  ungroup() %>%
+  ggplot(aes(x = Subject, y = m)) +
+  geom_point()
+```
+
+### Envoltura de facetas
+
+Los ajustes de facetas son una forma útil de ver categorías individuales en su propio gráfico.
+
+Por ejemplo, si quisieras hacer un gráfico separado para cada corte midiendo el `price`(eje y) para cada `clarity`(eje x), podrías agregar `facet_wrap(~cut)`.
+
+La tilde (\~) se puede leer como "por" como en: \> "Quiero hacer un nuevo gráfico separado por categorías de corte".
+
+```{r}
+diamonds %>% 
+  group_by(clarity, cut) %>% 
+  summarize(m = mean(price)) %>% 
+  ggplot(aes(x = clarity, y = m, group = cut, color = cut)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~cut)
+```
+
+### Gráfico de barras
+
+Sigamos usando nuestro gráfico de diamantes pero reemplazando `geom_point()`con `geom_bar()`. Aquí, graficamos el precio promedio (medio) de los diamantes por categoría de talla.
+
+```{r}
+diamonds %>% 
+  group_by(clarity, cut) %>% 
+  summarize(m = mean(price)) %>% 
+  ggplot(aes(x = clarity, y = m, group = cut, fill = cut)) +
+  geom_bar(stat = "identity") 
+```
+
+### Histogramas
+
+Al igual que los gráficos de barras, un histograma utiliza bloques rectangulares para mostrar datos. La diferencia entre un gráfico de barras y un histograma es la variable del eje x. Para gráficos de barras, la variable del eje x es *categórica* . Para los histogramas, el eje x es *continuo* (es decir, numérico). En ambos escenarios, el eje y es una variable numérica dependiente.
+
+En `diamonds`, podríamos observar la distribución de precios de todos los diamantes. De forma predeterminada, el valor del eje y de un histograma es el recuento (es decir, el valor predeterminado del argumento estadístico es `stat = "bin"`). Dentro de `geom_histogram()`, podemos cambiar el nivel de detalle que queremos que se vean las barras alterando el ancho del contenedor:
+
+```{r}
+diamonds %>% 
+  ggplot(aes(x = price, group = cut, fill = cut)) +
+  geom_histogram(binwidth = 500)
+```
+
+### Diagrama de caja
+
+Para graficar un diagrama de caja básico, usamos `geom_boxplot()`:
+
+```{r}
+diamonds %>% 
+  group_by(clarity, cut) %>% 
+  ggplot(aes(x = clarity, y = price, group = cut, fill = cut)) +
+  geom_boxplot() 
+```
+
+### Trama de violín
+
+Un diagrama de violín representa datos de manera similar a un diagrama de caja. Sin embargo, los diagramas de violín tienen la ventaja adicional de visualizar la distribución de los datos/observaciones. Podemos crear un diagrama de violín similar a un diagrama de caja reemplazando `geom_boxplot`con `geom_violin`:
+
+```{r}
+diamonds %>% 
+  group_by(clarity, cut) %>% 
+  ggplot(aes(x = clarity, y = price, group = cut, fill = cut)) +
+  geom_violin() 
+```
+
+### Etiquetar un gráfico
+
+Etiquetar un gráfico con ejes y títulos principales es cuestión de agregar otra línea al código que ya hemos creado. Notarás que construir un gráfico en R requiere un comando para cada componente. Primero debe especificar que hay un gráfico ( `ggplot()`), que hay puntos de datos en el gráfico ( `geom_point()`), que hay una línea de conexión entre los puntos de datos ( `geom_line()`), que hay barras de error ( `geom_errorbar()`), y así sucesivamente. El mismo principio se aplica a las etiquetas.
+
+Usando `?labs(`página de ayuda), vemos que`labs()`es lafunción más versátil. Puede especificar varios componentes de etiqueta, incluidos: `title`, `subtitle`, `caption`y `tag`. La página de ayuda también especifica que el eje x, el eje y y el título del gráfico pueden ser argumentos separados.
+
+```{r}
+diamonds %>% 
+  group_by(clarity, cut) %>% 
+  summarize(m = mean(price)) %>% 
+  ggplot(aes(x = clarity, y = m, group = cut, color = cut)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~cut, ncol = 2) +
+  labs(x = "my x-axis label here", 
+       y = "my y-axis label here", 
+       title = "The title of my Graph here")
+```
+
+## Funciones
+
+Las **funciones** en R son bloques de código que están diseñados para realizar una tarea específica y son fundamentales en la programación en R. Una función es esencialmente una pieza de código que toma uno o más valores, realiza alguna operación y devuelve un resultado.
+
+### Funciones creadas por el usuario
+
+La estructura básica de una función en R es:
+
+nombre_funcion \<- function(arg1, arg2, \...) { \# Cuerpo de la función return(resultado) }
+
+```{r}
+suma <- function(a, b) {
+  return(a + b)
+}
+suma(5, 3)
+```
+
+### Funciones Anónimas (Lambda)
+
+También son creadas por el usuario pero su creación es "al vuelo", es decir, no se necesita asignar un nombre. Estas son útiles para operaciones rápidas que no requieren ser reutilizadas, pero útiles como argumento de otras funciones que requieren como atributo una función y esta no existe o se quiere personalizar.
+
+```{r}
+(function(x) x**2)(5)
+```
+
+### La familia apply
+
+Las funciones de la familia apply proporcionan una forma eficiente y concisa de aplicar una función a los elementos de una estructura de datos, sin la necesidad de bucles explícitos. Estas funciones pueden ser más rápidas y más legibles que sus contrapartes de bucle.
+
+#### sapply
+
+Aplica una función a los elementos de una lista o vector, simplificando el resultado si es posible.
+
+```{r}
+strings <- c("apple", "banana", "cherry")
+sapply(strings, nchar) # nchar es la función a aplicar a todos los elementos de strings
+```
+
+#### lapply
+
+Funciona de manera similar a sapply, pero siempre devuelve una lista.
+
+```{r}
+nums <- list(a = 1:3, b = 4:6, c = 7:9)
+lapply(nums, function(x) x**2) 
+```
+
+## Unir tablas por columnas
+
+```{r}
+ pedidos <- data.frame(ClienteId = c(1:5), Producto = c("Televisión", "Smartphone", "Frigorífico", "Lavadora", "Microondas"))
+ 
+ clientes <- data.frame(ClienteId = c(1:8), Nombre = c("Juan", "Jose", "Antonio", "Luis", "Ismael", "David", "Jesús", "Ana"), Ciudad = c("Murcia", "Murcia", "Madrid", "Madrid", "Madrid", "Albacete", "Toledo", "Barcelona"))
+ pedidos
+ clientes
+```
+
+#### Inner join
+
+Si la columna de unión tiene el mismo nombre en ambos data frames:
+
+```{r}
+pedidos_clientes <- pedidos %>%
+inner_join(clientes, by = "ClienteId")
+pedidos_clientes
+```
+
+Ahora la columna Id, no se llama ClienteId
+
+```{r}
+clientes <- data.frame(Id = c(1:8), Nombre = c("Juan", "Jose", "Antonio", "Luis", "Ismael", "David", "Jesús", "Ana"), Ciudad = c("Murcia", "Murcia", "Madrid", "Madrid", "Madrid", "Albacete", "Toledo", "Barcelona"))
+clientes
+```
+
+Si el nombre de las columnas de unión es distinto:
+
+```{r}
+pedidos_clientes <- pedidos %>%
+inner_join(clientes, by = c("ClienteId" = "Id"))
+pedidos_clientes
+```
+
+#### Left join
+
+```{r}
+clientes <- data.frame(ClienteId = c(1:8), Nombre = c("Juan", "Jose", "Antonio", "Luis", "Ismael", "David", "Jesús", "Ana"), Ciudad = c("Murcia", "Murcia", "Madrid", "Madrid", "Madrid", "Albacete", "Toledo", "Barcelona"))
+clientes
+```
+
+```{r}
+clientes_pedidos <- clientes %>%
+left_join(pedidos, by = c("ClienteId"))
+clientes_pedidos
+```
+
+#### Right Join
+
+```{r}
+pedidos_clientes <- pedidos %>%
+right_join(clientes, by = c("ClienteId"))
+pedidos_clientes
+```
+
+#### Full Join
+
+```{r}
+productos <- data.frame(Producto = c("Televisión", "Smartphone", "Frigorífico", "Lavadora", "Microondas", "Estufa", "Tablet", "Ordenador"), Precio = c(600,500,800,400,80,20,200,1200))
+productos
+```
+
+```{r}
+pedidos %>%
+full_join(productos, by = c("Producto")) 
+```
+
+```{r}
+pedidos %>%
+full_join(productos, by = c("Producto")) %>%
+full_join(clientes, by = c("ClienteId"))
+```
+
+## Ubir tablas por filas
+
+#### Union
+
+Combina todas las filas de ambos data frames y elimina las duplicadas. El número de columnas debe coincidir.
+
+```{r}
+pedidos_ayer <- data.frame(ClienteId = c(1:5), Producto = c("Televisión", "Smartphone", "Frigorífico", "Lavadora", "Microondas"))
+pedidos_hoy <- data.frame(ClienteId = c(4:8), Producto = c("Lavadora", "Microondas", "Ordenador", "Estufa", "Tablet"))
+pedidos_ayer
+pedidos_hoy
+```
+
+```{r}
+union(pedidos_ayer, pedidos_hoy)
+```
+
+#### Union all
+
+```{r}
+union_all(pedidos_ayer, pedidos_hoy)
+```
+
+## Filtrando filas mediante otras tablas
+
+#### Semi join
+
+Sirve para filtrar filas de una tabla que aparecen en otra. No agrega columnas adicionales. Vamos a mostrar la tabla clientes, que han realizado un pedido hoy:
+
+```{r}
+clientes
+pedidos_hoy
+```
+
+```{r}
+clientes_activos_hoy <- semi_join(clientes, pedidos_hoy, by=c("ClienteId"))
+clientes_activos_hoy
+```
+
+#### Anti join
+
+Filtra filas de una tabla que **NO** aparecen en la otra. No agrega columnas adicionales. Vamos a mostrar la tabla clientes, que no hicieron pedido hoy:
+
+```{r}
+clientes_inactivos_hoy <- anti_join(clientes, pedidos_hoy, by=c("ClienteId"))
+clientes_inactivos_hoy
+```
