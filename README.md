@@ -5,8 +5,8 @@
 -**[README](README.md):** Un archivo explicativo del contenido (donde nos encontramos ahora mismo)
 
 -**Manuales personales:**
--[Manual PRIA](Manual%20personal.qmd): Manual personal de la asignatura PRIA
--[Manual SAA](Manual%20Personal%20SAA.qmd): Manual personal de la asignatura SAA
+  - [Manual PRIA](Manual%20personal.qmd): Manual personal de la asignatura PRIA
+  - [Manual SAA](Manual%20Personal%20SAA.qmd): Manual personal de la asignatura SAA
 
 - **Prácticas evaluables:**
   - [Práctica 4](Practica4.qmd): PRIA práctica 4: Visualización avanzada (EVALUABLE)
